@@ -1,6 +1,8 @@
 #include <Wire.h>
 #include <Adafruit_LSM303.h>
 
+Adafruit_LSM303 lsm;
+
 // pin assignments
 const int accelX = 0;
 const int accelY = 1;
