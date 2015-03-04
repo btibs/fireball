@@ -4,6 +4,7 @@ const int accelY = 1;
 const int accelZ = 2;
 
 const int buttonPin = 3;
+const int maxDice = 7;
 
 // minimum change in detected angle to trigger an event
 float deltaThreshold = 0.2;
@@ -23,8 +24,8 @@ void setup() {
   isRolling = false;
   
   nDice = 1;
+  pinMode(buttonPin, INPUT);
   Serial.begin(9600);
-  
   randomSeed(analogRead(0));
 }
 
@@ -32,6 +33,8 @@ void loop() {
   float xAcc = analogRead(accelX);
   float yAcc = analogRead(accelY);
   float zAcc = analogRead(accelZ);
+  
+  int bPress = digitalRead(buttonPin);
   
   // orientation math
   // (for reference using glove accel, may need to recalibrate)
@@ -61,11 +64,20 @@ void loop() {
   if (abs(pitch-lastPitch) > deltaThreshold || abs(roll-lastRoll) > deltaThreshold || abs(yaw-lastYaw) > deltaThreshold) {
     // we have a roll, generate a new random number
     isRolling = true;
-    int n = random(1,7);
+    int n = random(1,(6*nDice)+1);
     Serial.print("ROLLING: ");
     Serial.println(n);
+    
+    // todo: display code here
+    // todo:? delay inversely proportional to roll speed
   } else {
     isRolling = false; // could use this to re-initialize a seq?
+    if (bPress == HIGH) {
+      // only count button presses when ball is still
+      nDice++;
+      if (nDice > maxDice)
+        nDice = 1;
+    }
   }
 }
 
