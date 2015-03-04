@@ -1,3 +1,6 @@
+#include <Wire.h>
+#include <Adafruit_LSM303.h>
+
 // pin assignments
 const int accelX = 0;
 const int accelY = 1;
@@ -26,18 +29,28 @@ void setup() {
   nDice = 1;
   pinMode(buttonPin, INPUT);
   Serial.begin(9600);
-  randomSeed(analogRead(0));
+  randomSeed(analogRead(0)); // should be a floating pin - change as necessary
+  
+  if (!lsm.begin()) {
+    Serial.println("Unable to initialize LSM303!");
+    while(1);
+  }
+  else
+    Serial.println("LSM303 initialized");
 }
 
 void loop() {
-  float xAcc = analogRead(accelX);
-  float yAcc = analogRead(accelY);
-  float zAcc = analogRead(accelZ);
-  
+  // get current button stat
   int bPress = digitalRead(buttonPin);
   
+  // read values from the accel
+  lsm.read();
+  float xAcc = lsm.accelData.x;
+  float yAcc = lsm.accelData.y;
+  float zAcc = lsm.accelData.z;
+  
   // orientation math
-  // (for reference using glove accel, may need to recalibrate)
+  // (for reference using glove accel, need to recalibrate)
   // zeroes should be the minimum accel value
   // ie, x and y when board is lying flat, z when straight up
   float xZero = 508; // range like 450-600??
