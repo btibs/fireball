@@ -11,11 +11,12 @@ const int accelX = 0;
 const int accelY = 1;
 const int accelZ = 2;
 
-const int buttonPin = 15;
+const int buttonPin = 0; // note: using as analog pin
 const int maxDice = 7;
 
 // minimum change in detected angle to trigger an event
-float deltaThreshold = 0.2;
+float deltaThreshold = 4.0;
+int buttonThreshold = 50;
 
 // track values
 float pitch, roll, yaw, lastPitch, lastRoll, lastYaw;
@@ -50,8 +51,11 @@ void setup() {
 
 void loop() {
   // get current button stat
-  int bPress = digitalRead(buttonPin);
-  
+  int bPress = analogRead(buttonPin);
+  /*sprintf(tempString, "%4d", bPress);
+  Serial7Segment.write('v'); // reset display
+  Serial7Segment.print(tempString);
+  */
   // read values from the accel
   lsm.read();
   float xAcc = lsm.accelData.x;
@@ -76,7 +80,16 @@ void loop() {
   yaw = (acos(zAcc/sqrt(pow(xAcc, 2) + pow(yAcc, 2) + pow(zAcc, 2))) * (180/PI)); 
   
   // check if the ball has stopped rolling
-  if (abs(pitch-lastPitch) > deltaThreshold || abs(roll-lastRoll) > deltaThreshold || abs(yaw-lastYaw) > deltaThreshold) {
+  if (bPress > buttonThreshold) {
+    // only count button presses when ball is still
+    nDice++;
+    if (nDice > maxDice)
+      nDice = 1;
+    sprintf(tempString, " d%1d ", nDice);
+    Serial7Segment.write('v'); // reset display
+    Serial7Segment.print(tempString);
+    delay(400);
+  } else if (abs(pitch-lastPitch) > deltaThreshold || abs(roll-lastRoll) > deltaThreshold ){// || abs(yaw-lastYaw) > deltaThreshold) {
     // we have a roll, generate a new random number
     int n = random(1,(6*nDice)+1);
     Serial.print("ROLLING: ");
@@ -91,18 +104,8 @@ void loop() {
     Serial7Segment.write('v'); // reset display
     sprintf(tempString, " %2d ", n);
     Serial7Segment.print(tempString);
-  } else {
-    if (bPress == LOW) {
-      // only count button presses when ball is still
-      nDice++;
-      if (nDice > maxDice)
-        nDice = 1;
-      sprintf(tempString, "d  %1d", nDice);
-    }
-    Serial7Segment.write('v'); // reset display
-    Serial7Segment.print(tempString);
-    delay(100);
   }
+  //*/
   delay(100);
 }
 
