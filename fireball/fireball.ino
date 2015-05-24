@@ -90,8 +90,12 @@ void loop() {
     Serial7Segment.print(tempString);
     delay(400);
   } else if (abs(pitch-lastPitch) > deltaThreshold || abs(roll-lastRoll) > deltaThreshold ){// || abs(yaw-lastYaw) > deltaThreshold) {
+    
     // we have a roll, generate a new random number
-    int n = random(1,(6*nDice)+1);
+    int n = 0;
+    for (int i = 0; i < nDice; i++)
+      n += random(1,6+1);
+    
     Serial.print("ROLLING: ");
     Serial.print(abs(pitch-lastPitch));
     Serial.print(" ");
